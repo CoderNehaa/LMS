@@ -1,0 +1,1 @@
+// define all the types, interfaces and enums for book module here
