@@ -1,5 +1,5 @@
 import joi from "joi";
-import { BaseValidator } from "../utils/base.validator";
+import { BaseValidator } from "../base/base.validator";
 
 export class UserValidator {
   static signupSchema = joi.object({

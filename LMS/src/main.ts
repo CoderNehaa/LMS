@@ -1,6 +1,6 @@
 import express from "express";
-import userRouter from "./user/user.route";
-import bookRouter from "./book/book.route";
+import userRouter from "./modules/user/user.route";
+import bookRouter from "./modules/book/book.route";
 import { PORT } from "./config/environment";
 import { connectDB } from "./config/db";
 

@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { IUser } from "./user.type";
-import { COLLECTION_NAMES } from "../constants/collections";
+import { COLLECTION_NAMES } from "../../constants/collections";
 
 const UserSchema = new mongoose.Schema<IUser>(
   {
