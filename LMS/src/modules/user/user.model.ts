@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { IUser } from "./user.type";
+import { EUserRoles, IUser } from "./user.type";
 import { COLLECTION_NAMES } from "../../constants/collections";
 
 const UserSchema = new mongoose.Schema<IUser>(
@@ -20,6 +20,12 @@ const UserSchema = new mongoose.Schema<IUser>(
     },
     password: {
       type: String,
+      required: true,
+    },
+    role: {
+      type: String,
+      enum: EUserRoles,
+      default: EUserRoles.student,
       required: true,
     },
   },

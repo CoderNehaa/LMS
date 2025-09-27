@@ -2,9 +2,13 @@ import { NextFunction, Request, Response } from "express";
 import Joi from "joi";
 
 export abstract class BaseValidator {
-  static validate(schema: Joi.ObjectSchema) {
+  static validate(
+    schema: Joi.ObjectSchema,
+    location: "query" | "params" | "body" = "body"
+  ) {
     return (req: Request, res: Response, next: NextFunction) => {
-      const { error } = schema.validate(req.body);
+      const data = req[location];
+      const { error } = schema.validate(data);
       // TODO:format error
       if (error) {
         return res.status(400).json({
