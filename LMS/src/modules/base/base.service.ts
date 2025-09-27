@@ -16,4 +16,8 @@ export abstract class BaseService<T extends Document> {
   async getOne(property: Object): Promise<T | null> {
     return await this.model.findOne(property);
   }
+
+  async getAll(): Promise<Array<T>> {
+    return await this.model.find();
+  }
 }

@@ -1,16 +1,20 @@
 import { Router } from "express";
-import { UserController } from "./user.controller";
 import { UserValidator } from "./user.validator";
+import userController from "./user.container";
+import { BaseValidator } from "../base/base.validator";
 
 const userRouter = Router();
-const userController = new UserController();
 
-userRouter.post("/signup", UserValidator.signupValidator, (req, res) =>
-  userController.signup(req, res)
+userRouter.post(
+  "/signup",
+  BaseValidator.validate(UserValidator.signupValidator),
+  userController.signup.bind(userController)
 );
 
-userRouter.post("/login", UserValidator.loginValidator, (req, res) =>
-  userController.login(req, res)
+userRouter.post(
+  "/login",
+  BaseValidator.validate(UserValidator.loginValidator),
+  userController.login.bind(userController)
 );
 
 export default userRouter;
