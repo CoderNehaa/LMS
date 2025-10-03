@@ -1,4 +1,4 @@
-import { Document } from "mongoose";
+import { Document, ObjectId } from "mongoose";
 
 export enum EUserRoles {
   student = "student",
@@ -6,6 +6,7 @@ export enum EUserRoles {
 }
 
 export interface IUser extends Document {
+  _id: String | ObjectId;
   email: string;
   password: string;
   username: string;

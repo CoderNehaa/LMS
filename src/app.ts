@@ -1,11 +1,8 @@
 import express, { Application, Router } from "express";
-import ErrorHandler from "./middlewares/errorHandler.middleware";
 import mongoose from "mongoose";
 import { DB_CONNECTION_URL } from "./config/environment";
 import cookieParser from "cookie-parser";
-import { Server } from "socket.io";
-import http from "http";
-import { SocketManager } from "./socket/socket";
+import GlobalErrorHandler from "./middlewares/errorHandler.middleware";
 
 interface RouteDefinition {
   path: string;
@@ -15,22 +12,11 @@ interface RouteDefinition {
 class App {
   express: Application;
   port: number;
-  server: http.Server;
-  io: Server;
 
   constructor(port: number, routes: RouteDefinition[]) {
     this.express = express();
     this.port = port;
 
-    // Create HTTP server from express app
-    this.server = http.createServer(this.express);
-
-    // Attach socket.io to the server
-    this.io = new Server(this.server, {
-      cors: { origin: "*" }, // configure as needed
-    });
-
-    new SocketManager(this.io);
     // Initialize DB connection, middlewares, routes and global error handler
     this.initializeDBConnection();
     this.initializeMiddlewares();
@@ -64,7 +50,7 @@ class App {
   }
 
   initializeErrorHandling() {
-    // this.express.use(ErrorHandler);
+    this.express.use(GlobalErrorHandler);
   }
 
   listen() {

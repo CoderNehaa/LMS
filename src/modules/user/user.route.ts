@@ -1,20 +1,11 @@
 import { Router } from "express";
-import { UserValidator } from "./user.validator";
-import userController from "./user.container";
-import { BaseValidator } from "../base/base.validator";
+import { authMiddleware, userController } from "../container";
 
 const userRouter = Router();
+userRouter.use(authMiddleware.authentic);
 
-userRouter.post(
-  "/signup",
-  BaseValidator.validate(UserValidator.signupValidator),
-  userController.signup.bind(userController)
-);
-
-userRouter.post(
-  "/login",
-  BaseValidator.validate(UserValidator.loginValidator),
-  userController.login.bind(userController)
-);
+userRouter.get("/data/:userId", userController.updateUser.bind(userController));
+userRouter.put("/", userController.updateUser.bind(userController));
+userRouter.delete("/", userController.deleteUser.bind(userController));
 
 export default userRouter;
