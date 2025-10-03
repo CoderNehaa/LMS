@@ -6,47 +6,64 @@ export class UserController extends BaseController {
   private userService: UserService;
 
   constructor(service: UserService) {
-    //In JavaScript/TypeScript, classes that extends another class must call the parent constructor with super() before using this.
-    // Because the JavaScript spec says → you can’t access this in a subclass until the parent’s constructor has run.
-    super(); // calls BaseController’s constructor (even if it’s empty)
+    super();
     this.userService = service;
   }
 
-  async login(req: Request, res: Response) {
+  async getById(req: Request, res: Response) {
     try {
-      const { email, password } = req.body;
-      const user = await this.userService.getOne({ email });
-      if (!user) {
-        return this.sendNotFoundResponse(res);
+      const { userId } = req.params;
+      if (userId === String(req.user._id)) {
+        return this.sendSuccessResponse(res, req.user);
       }
 
-      if (user.password !== password) {
-        return this.sendBadRequestResponse(res, "Invalid Credentials");
-      }
-
-      return this.sendResponse(res, "Logged in successfully!", 200, true, user);
+      const user = await this.userService.getById(userId);
+      return this.sendSuccessResponse(res, user);
     } catch (e) {
-      return this.handleError(res, e, "login", "UserController");
+      return this.handleError(res, e, "getById", "UserController");
     }
   }
 
-  async signup(req: Request, res: Response) {
+  async updateUser(req: Request, res: Response) {
     try {
-      const { username, email, password } = req.body;
-      const emailExists = await this.userService.getOne({ email });
-      if (emailExists) {
-        return this.sendBadRequestResponse(res, "Email already exists");
-      }
-
-      const usernameExists = await this.userService.getOne({ username });
-      if (usernameExists) {
-        return this.sendBadRequestResponse(res, "Username already exists");
-      }
-
-      const user = await this.userService.create({ username, email, password });
-      return this.sendResponse(res, "Signed up successfully!", 200, true, user);
+      const userId = req.user._id;
+      const { updateBody } = req.body;
+      const updatedUser = await this.userService.updateById(
+        String(userId),
+        updateBody
+      );
+      return this.sendResponse(
+        res,
+        "Account updated successfully!",
+        200,
+        true,
+        updatedUser
+      );
     } catch (e) {
-      return this.handleError(res, e, "signup", "UserController");
+      return this.handleError(res, e, "updateUser", "UserController");
+    }
+  }
+
+  async deleteUser(req: Request, res: Response) {
+    try {
+      const userId = req.user._id;
+      const deletedUser = await this.userService.deleteById(String(userId));
+      if (!deletedUser) {
+        return this.sendServerErrorResponse(
+          res,
+          "Failed to delete account! Try later"
+        );
+      }
+
+      return this.sendResponse(
+        res,
+        "Account deleted successfully!",
+        200,
+        true,
+        deletedUser
+      );
+    } catch (e) {
+      return this.handleError(res, e, "deleteUser", "UserController");
     }
   }
 }

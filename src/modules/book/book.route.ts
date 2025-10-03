@@ -1,11 +1,10 @@
 // API Routes
 import { Router } from "express";
-import { AuthMiddleware } from "../../middlewares/auth.middleware";
-import bookController from "./book.container";
+import { authMiddleware, bookController } from "../container";
 
 const bookRouter = Router();
 
-bookRouter.use(AuthMiddleware.authentic);
+bookRouter.use(authMiddleware.authentic);
 bookRouter.get("/all", bookController.getBooksList.bind(bookController));
 bookRouter.get(
   "/availability/:id",
@@ -13,7 +12,7 @@ bookRouter.get(
 );
 
 // below APIs should be accessible to only librarian
-bookRouter.use(AuthMiddleware.isLibrarian);
+bookRouter.use(authMiddleware.isLibrarian);
 bookRouter.post("/add", bookController.addNewBook.bind(bookController));
 bookRouter.patch("/stock", bookController.updateBookStock.bind(bookController));
 

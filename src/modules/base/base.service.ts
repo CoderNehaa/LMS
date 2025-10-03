@@ -20,4 +20,16 @@ export abstract class BaseService<T extends Document> {
   async getAll(): Promise<Array<T>> {
     return await this.model.find();
   }
+
+  async getById(id: string): Promise<T | null> {
+    return await this.model.findById(id);
+  }
+
+  async updateById(id: string, updateBody:any): Promise<T | null> {
+    return await this.model.findByIdAndUpdate(id, updateBody);
+  }
+
+  async deleteById(id: string): Promise<T | null> {
+    return await this.model.findByIdAndDelete(id);
+  }
 }
