@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema<IUser>(
     role: {
       type: String,
       enum: EUserRoles,
-      default: EUserRoles.student,
+      default: EUserRoles.USER,
       required: true,
     },
     isVerified: {

@@ -1,8 +1,8 @@
 import { Document, ObjectId } from "mongoose";
 
 export enum EUserRoles {
-  student = "student",
-  librarian = "librarian", //incharge of library - only one who adds books
+  USER = "user",
+  admin = "admin", //incharge of library - only one who adds books
 }
 
 export interface IUser extends Document {

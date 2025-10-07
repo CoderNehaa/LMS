@@ -8,6 +8,17 @@ export class UserController extends BaseController {
   constructor(service: UserService) {
     super();
     this.userService = service;
+
+    // bind methods
+    this.getLoggedInUser = this.getLoggedInUser.bind(this);
+    this.getById = this.getById.bind(this);
+    this.updateUser = this.updateUser.bind(this);
+    this.deleteUser = this.deleteUser.bind(this);
+    this.resetPassword = this.resetPassword.bind(this);
+  }
+
+  async getLoggedInUser(req: Request, res: Response) {
+    return this.sendSuccessResponse(res, req.user);
   }
 
   async getById(req: Request, res: Response) {

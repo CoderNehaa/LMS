@@ -1,4 +1,4 @@
-import { Document, Model } from "mongoose";
+import { ClientSession, Document, Model } from "mongoose";
 
 export abstract class BaseService<T extends Document> {
   protected model: Model<T>;
@@ -13,8 +13,11 @@ export abstract class BaseService<T extends Document> {
     return newItem;
   }
 
-  async getOne(property: Object): Promise<T | null> {
-    return await this.model.findOne(property);
+  async getOne(property: Object, session?: ClientSession): Promise<T | null> {
+    const result = session
+      ? await this.model.findOne(property).session(session)
+      : await this.model.findOne(property);
+    return result;
   }
 
   async getAll(): Promise<Array<T>> {
@@ -25,11 +28,25 @@ export abstract class BaseService<T extends Document> {
     return await this.model.findById(id);
   }
 
-  async updateById(id: string, updateBody: any): Promise<T | null> {
-    return await this.model.findOneAndUpdate({ _id: id }, updateBody);
+  async updateById(
+    id: string,
+    updateBody: Partial<T>,
+    session?: ClientSession
+  ): Promise<T | null> {
+    const data = session
+      ? await this.model
+          .findOneAndUpdate({ _id: id }, updateBody, { new: true })
+          .session(session)
+      : await this.model.findOneAndUpdate({ _id: id }, updateBody, {
+          new: true,
+        });
+    return data;
   }
 
-  async deleteById(id: string): Promise<T | null> {
-    return await this.model.findByIdAndDelete(id);
+  async deleteById(id: string, session?: ClientSession): Promise<T | null> {
+    const data = session
+      ? await this.model.findByIdAndDelete(id).session(session)
+      : await this.model.findByIdAndDelete(id);
+    return data;
   }
 }
