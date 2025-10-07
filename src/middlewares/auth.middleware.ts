@@ -50,4 +50,18 @@ export class AuthMiddleware {
     }
     next();
   }
+
+  async userExistWithEmail(req: Request, res: Response, next: NextFunction) {
+    const user = await this.userService.getOne({ email: req.body.email });
+    if (!user) {
+      return res
+        .status(404)
+        .json({
+          success: false,
+          message: "Account with this email does not exist!",
+        });
+    }
+    req.user = user;
+    next();
+  }
 }

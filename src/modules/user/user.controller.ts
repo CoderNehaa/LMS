@@ -32,12 +32,10 @@ export class UserController extends BaseController {
         String(userId),
         updateBody
       );
-      return this.sendResponse(
+      return this.sendSuccessResponse(
         res,
-        "Account updated successfully!",
-        200,
-        true,
-        updatedUser
+        updatedUser,
+        "Account updated successfully!"
       );
     } catch (e) {
       return this.handleError(res, e, "updateUser", "UserController");
@@ -55,15 +53,31 @@ export class UserController extends BaseController {
         );
       }
 
-      return this.sendResponse(
+      return this.sendSuccessResponse(
         res,
-        "Account deleted successfully!",
-        200,
-        true,
-        deletedUser
+        deletedUser,
+        "Account deleted successfully!"
       );
     } catch (e) {
       return this.handleError(res, e, "deleteUser", "UserController");
+    }
+  }
+
+  async resetPassword(req: Request, res: Response) {
+    try {
+      const userId = req.user._id;
+      const { newPassword } = req.body;
+      const updatedUser = await this.userService.updateById(String(userId), {
+        password: newPassword,
+      });
+
+      return this.sendSuccessResponse(
+        res,
+        updatedUser,
+        "Password updated successfully!"
+      );
+    } catch (e) {
+      return this.handleError(res, e, "resetPassword", "UserController");
     }
   }
 }

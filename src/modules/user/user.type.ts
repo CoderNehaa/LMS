@@ -8,7 +8,9 @@ export enum EUserRoles {
 export interface IUser extends Document {
   _id: String | ObjectId;
   email: string;
-  password: string;
   username: string;
   role: EUserRoles;
+  isVerified: boolean;
+  password?: string; //to prevent sending password in user object
+  comparePassword(password: string): Promise<boolean>;
 }

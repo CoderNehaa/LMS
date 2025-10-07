@@ -25,8 +25,8 @@ export abstract class BaseService<T extends Document> {
     return await this.model.findById(id);
   }
 
-  async updateById(id: string, updateBody:any): Promise<T | null> {
-    return await this.model.findByIdAndUpdate(id, updateBody);
+  async updateById(id: string, updateBody: any): Promise<T | null> {
+    return await this.model.findOneAndUpdate({ _id: id }, updateBody);
   }
 
   async deleteById(id: string): Promise<T | null> {
