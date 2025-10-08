@@ -1,13 +1,13 @@
 import { Request, Response } from "express";
 import { BaseController } from "../base/base.controller";
 import { UserService } from "../user/user.service";
-import { clearCookies, generateAndSaveAuthTokens } from "../../utils/helper";
 import { OTPService } from "../otp/otp.service";
 import mongoose from "mongoose";
 import { AUTH_RESPONSE_MESSAGES } from "../../constants/auth";
 import { IUser } from "../user/user.type";
-import { EmailService } from "../../utils/email-service";
+import { EmailService } from "../../clients/email.service";
 import { SIGNUP_EMAIL } from "../../constants/email";
+import { TokenService } from "../../clients/token.service";
 
 const { NEW_SIGNUP, EXISTING_SIGNUP } = AUTH_RESPONSE_MESSAGES;
 
@@ -15,16 +15,19 @@ export class AuthController extends BaseController {
   private userService: UserService;
   private otpService: OTPService;
   private emailService: EmailService;
+  private tokenService: TokenService;
 
   constructor(
     userService: UserService,
     otpService: OTPService,
-    emailService: EmailService
+    emailService: EmailService,
+    tokenService: TokenService
   ) {
     super();
     this.userService = userService;
     this.otpService = otpService;
     this.emailService = emailService;
+    this.tokenService = tokenService;
 
     // bind all methods
     this.login = this.login.bind(this);
@@ -44,7 +47,7 @@ export class AuthController extends BaseController {
         return this.sendBadRequestResponse(res, "Invalid Credentials");
       }
 
-      generateAndSaveAuthTokens(res, String(user._id));
+      this.tokenService.generateAndSaveAuthTokens(res, String(user._id));
       return this.sendSuccessResponse<IUser>(
         res,
         user,
@@ -116,7 +119,7 @@ export class AuthController extends BaseController {
         },
         session
       );
-      generateAndSaveAuthTokens(res, String(user._id));
+      this.tokenService.generateAndSaveAuthTokens(res, String(user._id));
 
       await session.commitTransaction();
       return this.sendSuccessResponse<IUser | null>(
@@ -152,7 +155,7 @@ export class AuthController extends BaseController {
   }
 
   async logout(req: Request, res: Response) {
-    clearCookies(res);
+    this.tokenService.clearCookies(res);
     return this.sendSuccessResponse(res, null, "Logged out successfully!");
   }
 
