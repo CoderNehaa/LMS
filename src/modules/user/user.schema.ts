@@ -8,14 +8,12 @@ const userSchema = new mongoose.Schema<IUser>(
     username: {
       type: String,
       required: true,
-      unique: true,
       trim: true,
       lowercase: true,
     },
     email: {
       type: String,
       required: true,
-      unique: true,
       trim: true,
       lowercase: true,
     },
@@ -33,10 +31,25 @@ const userSchema = new mongoose.Schema<IUser>(
       type: Boolean,
       default: false,
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      select: false, // Hide in queries by default
+    },
   },
   {
     timestamps: true,
   }
+);
+
+// partial unique indexes (for non-deleted users)
+userSchema.index(
+  { email: 1 },
+  { unique: true, partialFilterExpression: { isDeleted: false } }
+);
+userSchema.index(
+  { username: 1 },
+  { unique: true, partialFilterExpression: { isDeleted: false } }
 );
 
 // Prevent sending password in user object
@@ -69,6 +82,25 @@ userSchema.pre(
     next();
   }
 );
+
+// Apply middleware to filter deleted users from queries
+function addNotDeletedFilter(this: any, next: any) {
+  const filter = this.getFilter();
+
+  // Allow explicit override via { includeDeleted: true }
+  if ((this as any).mongooseOptions()?.includeDeleted) return next();
+
+  // Add isDeleted:false filter if not already specified
+  if (filter.isDeleted === undefined) {
+    this.setQuery({ ...filter, isDeleted: false });
+  }
+  next();
+}
+
+userSchema.pre("find", addNotDeletedFilter);
+userSchema.pre("findOne", addNotDeletedFilter);
+userSchema.pre("countDocuments", addNotDeletedFilter);
+userSchema.pre("findOneAndUpdate", addNotDeletedFilter);
 
 // Compare password method
 userSchema.methods.comparePassword = async function (

@@ -1,14 +1,11 @@
 import { Request, Response } from "express";
 import { BaseController } from "../base/base.controller";
 import { UserService } from "../user/user.service";
-import { generateAndSaveAuthTokens } from "../../utils/helper";
+import { clearCookies, generateAndSaveAuthTokens } from "../../utils/helper";
 import { OTPService } from "../otp/otp.service";
 import mongoose from "mongoose";
-import {
-  ACCESS_TOKEN_NAME,
-  AUTH_RESPONSE_MESSAGES,
-  REFRESH_TOKEN_NAME,
-} from "../../constants/auth";
+import { AUTH_RESPONSE_MESSAGES } from "../../constants/auth";
+import { IUser } from "../user/user.type";
 
 const { NEW_SIGNUP, EXISTING_SIGNUP } = AUTH_RESPONSE_MESSAGES;
 
@@ -17,14 +14,13 @@ export class AuthController extends BaseController {
   private otpService: OTPService;
 
   constructor(userService: UserService, otpService: OTPService) {
-    //In JavaScript/TypeScript, classes that extends another class must call the parent constructor with super() before using this.
-    // Because the JavaScript spec says → you can’t access this in a subclass until the parent’s constructor has run.
-    super(); // calls BaseController’s constructor (even if it’s empty)
+    super();
     this.userService = userService;
     this.otpService = otpService;
 
     // bind all methods
     this.login = this.login.bind(this);
+    this.checkUsername = this.checkUsername.bind(this);
     this.signup = this.signup.bind(this);
     this.verifyAccount = this.verifyAccount.bind(this);
     this.forgotPassword = this.forgotPassword.bind(this);
@@ -41,7 +37,11 @@ export class AuthController extends BaseController {
       }
 
       generateAndSaveAuthTokens(res, String(user._id));
-      return this.sendSuccessResponse(res, user, "Logged in successfully!");
+      return this.sendSuccessResponse<IUser>(
+        res,
+        user,
+        "Logged in successfully!"
+      );
     } catch (e) {
       return this.handleError(res, e, "login", "AuthController");
     }
@@ -65,9 +65,8 @@ export class AuthController extends BaseController {
       }
 
       const user = await this.userService.create({ username, email, password });
-      console.log(otp);
       // TODO:Send this OTP on email with proper email text of new account
-      return this.sendSuccessResponse(res, user, NEW_SIGNUP(email));
+      return this.sendSuccessResponse<IUser>(res, user, NEW_SIGNUP(email));
     } catch (e) {
       return this.handleError(res, e, "signup", "AuthController");
     }
@@ -108,7 +107,7 @@ export class AuthController extends BaseController {
       generateAndSaveAuthTokens(res, String(user._id));
 
       await session.commitTransaction();
-      return this.sendSuccessResponse(
+      return this.sendSuccessResponse<IUser | null>(
         res,
         verifiedUser,
         "Account verified successfully!"
@@ -125,13 +124,12 @@ export class AuthController extends BaseController {
     try {
       const user = req.user;
       let randomPassword = this.userService.generateRandomPassword();
-      console.log(randomPassword);
       // TODO : send random password on email
       let updatedUser = await this.userService.updateById(String(user._id), {
         password: randomPassword,
       });
 
-      return this.sendSuccessResponse(
+      return this.sendSuccessResponse<IUser | null>(
         res,
         updatedUser,
         "New password sent on email successfully!"
@@ -142,14 +140,15 @@ export class AuthController extends BaseController {
   }
 
   async logout(req: Request, res: Response) {
-    let payload = {
-      httpOnly: true,
-      secure: true,
-      sameSite: true,
-      path: "/",
-    };
-    res.clearCookie(ACCESS_TOKEN_NAME, payload);
-    res.clearCookie(REFRESH_TOKEN_NAME, payload);
+    clearCookies(res);
     return this.sendSuccessResponse(res, null, "Logged out successfully!");
+  }
+
+  async checkUsername(req: Request, res: Response) {
+    const { username } = req.body;
+    let exists = await this.userService.getOne({ username });
+    return this.sendSuccessResponse<{ usernameAvailable: boolean }>(res, {
+      usernameAvailable: exists ? false : true,
+    });
   }
 }

@@ -2,12 +2,12 @@ import { Response } from "express";
 
 export abstract class BaseController {
   // This method can be used for both cases - success and error
-  protected sendResponse(
+  protected sendResponse<T>(
     res: Response,
     message: string,
     statusCode: number,
     success: boolean,
-    data: any
+    data: T
   ) {
     return res.status(statusCode).json({
       success,
@@ -16,9 +16,9 @@ export abstract class BaseController {
     });
   }
 
-  protected sendSuccessResponse(
+  protected sendSuccessResponse<T>(
     res: Response,
-    data: any,
+    data: T,
     message: string = "Operation Successful",
     statusCode: number = 200,
     success: boolean = true
@@ -30,11 +30,11 @@ export abstract class BaseController {
     });
   }
 
-  protected sendNotFoundResponse(
+  protected sendNotFoundResponse<T>(
     res: Response,
     message: string = "Request Resource not found!",
     statusCode: number = 404,
-    data: any = null
+    data: T | null = null
   ) {
     return res.status(statusCode).json({
       success: false,
@@ -43,11 +43,11 @@ export abstract class BaseController {
     });
   }
 
-  protected sendServerErrorResponse(
+  protected sendServerErrorResponse<T>(
     res: Response,
     message: string = "Internal Server Error!",
     statusCode: number = 500,
-    data: any = null
+    data: T | null = null
   ) {
     return res.status(statusCode).json({
       success: false,
@@ -56,11 +56,11 @@ export abstract class BaseController {
     });
   }
 
-  protected sendBadRequestResponse(
+  protected sendBadRequestResponse<T>(
     res: Response,
     message: string = "Bad Request!",
     statusCode: number = 400,
-    data: any = null
+    data: T | null = null
   ) {
     return res.status(statusCode).json({
       success: false,
