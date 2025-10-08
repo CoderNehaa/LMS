@@ -19,12 +19,10 @@ if (fs.existsSync(basePath)) {
 
 // files to generate
 const files = [
-  "container.ts",
   "controller.ts",
   "route.ts",
   "schema.ts",
   "type.ts",
-  "model.ts",
   "service.ts",
   "validator.ts",
 ];

@@ -2,20 +2,50 @@
 import { Router } from "express";
 import { BaseValidator } from "../base/base.validator";
 import { AuthValidator } from "./auth.validator";
-import { authController } from "../container";
+import { authController, authMiddleware } from "../container";
 
 const authRouter = Router();
+const { validateEndpoint } = BaseValidator;
+const {
+  signupValidator,
+  loginValidator,
+  verifyAccountValidator,
+  emailValidator,
+  checkUsernameValidator,
+} = AuthValidator;
 
 authRouter.post(
   "/signup",
-  BaseValidator.validate(AuthValidator.signupValidator),
-  authController.signup.bind(authController)
+  validateEndpoint(signupValidator),
+  authController.signup
 );
 
 authRouter.post(
   "/login",
-  BaseValidator.validate(AuthValidator.loginValidator),
-  authController.login.bind(authController)
+  validateEndpoint(loginValidator),
+  authMiddleware.userExistWithEmail,
+  authController.login
+);
+
+authRouter.post(
+  "/verify-account",
+  validateEndpoint(verifyAccountValidator),
+  authMiddleware.userExistWithEmail,
+  authController.verifyAccount
+);
+
+authRouter.post(
+  "/forgot-password",
+  validateEndpoint(emailValidator),
+  authMiddleware.userExistWithEmail,
+  authController.forgotPassword
+);
+
+authRouter.post("/logout", validateEndpoint(), authController.logout);
+authRouter.post(
+  "/check-username",
+  validateEndpoint(checkUsernameValidator),
+  authController.checkUsername
 );
 
 export default authRouter;

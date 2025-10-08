@@ -9,11 +9,19 @@ export class AuthMiddleware {
 
   constructor(service: UserService) {
     this.userService = service;
+
+    // bind methods
+    this.authentic = this.authentic.bind(this);
+    this.isAdmin = this.isAdmin.bind(this);
+    this.userExistWithEmail = this.userExistWithEmail.bind(this);
   }
 
-  private async sendUnauthorized(res: Response) {
+  private async sendUnauthorized(
+    res: Response,
+    message: string = "Unauthorized"
+  ) {
     clearCookies(res);
-    return res.status(401).json({ message: "Unauthorized" });
+    return res.status(401).json({ message });
   }
 
   async authentic(req: Request, res: Response, next: NextFunction) {
@@ -35,6 +43,11 @@ export class AuthMiddleware {
       return this.sendUnauthorized(res);
     }
 
+    // Check if user is verified
+    if (!user.isVerified) {
+      return this.sendUnauthorized(res, "Account not verified");
+    }
+
     // validate user role here
     if (!Object.values(EUserRoles).includes(user.role)) {
       return this.sendUnauthorized(res);
@@ -44,10 +57,22 @@ export class AuthMiddleware {
     next();
   }
 
-  isLibrarian(req: Request, res: Response, next: NextFunction) {
-    if (req.user.role !== EUserRoles.librarian) {
+  isAdmin(req: Request, res: Response, next: NextFunction) {
+    if (req.user.role !== EUserRoles.admin) {
       return res.status(403).json({ message: "Forbidden" });
     }
+    next();
+  }
+
+  async userExistWithEmail(req: Request, res: Response, next: NextFunction) {
+    const user = await this.userService.getOne({ email: req.body.email });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Account with this email does not exist!",
+      });
+    }
+    req.user = user;
     next();
   }
 }

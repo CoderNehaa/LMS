@@ -10,7 +10,11 @@ export class UserController extends BaseController {
     this.userService = service;
   }
 
-  async getById(req: Request, res: Response) {
+  getLoggedInUser = (req: Request, res: Response) => {
+    return this.sendSuccessResponse(res, req.user);
+  };
+
+  getById = async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;
       if (userId === String(req.user._id)) {
@@ -22,48 +26,55 @@ export class UserController extends BaseController {
     } catch (e) {
       return this.handleError(res, e, "getById", "UserController");
     }
-  }
+  };
 
-  async updateUser(req: Request, res: Response) {
+  updateUser = async (req: Request, res: Response) => {
     try {
       const userId = req.user._id;
-      const { updateBody } = req.body;
       const updatedUser = await this.userService.updateById(
         String(userId),
-        updateBody
+        req.body
       );
-      return this.sendResponse(
+      return this.sendSuccessResponse(
         res,
-        "Account updated successfully!",
-        200,
-        true,
-        updatedUser
+        updatedUser,
+        "Account updated successfully!"
       );
     } catch (e) {
       return this.handleError(res, e, "updateUser", "UserController");
     }
-  }
+  };
 
-  async deleteUser(req: Request, res: Response) {
+  deleteUser = async (req: Request, res: Response) => {
     try {
       const userId = req.user._id;
-      const deletedUser = await this.userService.deleteById(String(userId));
-      if (!deletedUser) {
-        return this.sendServerErrorResponse(
-          res,
-          "Failed to delete account! Try later"
-        );
-      }
+      const deletedUser = await this.userService.softDeleteById(String(userId));
 
-      return this.sendResponse(
+      return this.sendSuccessResponse(
         res,
-        "Account deleted successfully!",
-        200,
-        true,
-        deletedUser
+        deletedUser,
+        "Account deleted successfully!"
       );
     } catch (e) {
       return this.handleError(res, e, "deleteUser", "UserController");
     }
-  }
+  };
+
+  resetPassword = async (req: Request, res: Response) => {
+    try {
+      const userId = req.user._id;
+      const { newPassword } = req.body;
+      const updatedUser = await this.userService.updateById(String(userId), {
+        password: newPassword,
+      });
+
+      return this.sendSuccessResponse(
+        res,
+        updatedUser,
+        "Password updated successfully!"
+      );
+    } catch (e) {
+      return this.handleError(res, e, "resetPassword", "UserController");
+    }
+  };
 }

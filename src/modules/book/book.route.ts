@@ -12,7 +12,7 @@ bookRouter.get(
 );
 
 // below APIs should be accessible to only librarian
-bookRouter.use(authMiddleware.isLibrarian);
+bookRouter.use(authMiddleware.isAdmin);
 bookRouter.post("/add", bookController.addNewBook.bind(bookController));
 bookRouter.patch("/stock", bookController.updateBookStock.bind(bookController));
 
