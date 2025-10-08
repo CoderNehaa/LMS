@@ -8,8 +8,6 @@ export const ACCESS_TOKEN_SECRET_KEY =
 export const REFRESH_TOKEN_SECRET_KEY =
   process.env.REFRESH_TOKEN_SECRET_KEY || "";
 
-export const EMAIL_HOST = process.env.EMAIL_HOST;
-export const EMAIL_PORT = process.env.EMAIL_PORT;
-export const EMAIL_SENDER_MAIL = process.env.EMAIL_SENDER_MAIL;
-export const EMAIL_SENDER_NAME = process.env.EMAIL_SENDER_NAME;
+export const EMAIL_SENDER_MAIL = process.env.EMAIL_SENDER_MAIL || "";
+export const EMAIL_SENDER_NAME = process.env.EMAIL_SENDER_NAME || "";
 export const EMAIL_SENDER_PASSWORD = process.env.EMAIL_SENDER_PASSWORD;

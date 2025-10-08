@@ -52,11 +52,9 @@ export abstract class BaseService<T extends Document> {
 
   async softDeleteById(id: string, session?: ClientSession): Promise<T | null> {
     const data = session
-      ? await this.model.findByIdAndUpdate(
-          id,
-          { isDeleted: true },
-          { new: true }
-        )
+      ? await this.model
+          .findByIdAndUpdate(id, { isDeleted: true }, { new: true })
+          .session(session)
       : await this.model.findByIdAndUpdate(
           id,
           { isDeleted: true },

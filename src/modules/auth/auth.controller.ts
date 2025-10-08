@@ -6,17 +6,25 @@ import { OTPService } from "../otp/otp.service";
 import mongoose from "mongoose";
 import { AUTH_RESPONSE_MESSAGES } from "../../constants/auth";
 import { IUser } from "../user/user.type";
+import { EmailService } from "../../utils/email-service";
+import { SIGNUP_EMAIL } from "../../constants/email";
 
 const { NEW_SIGNUP, EXISTING_SIGNUP } = AUTH_RESPONSE_MESSAGES;
 
 export class AuthController extends BaseController {
   private userService: UserService;
   private otpService: OTPService;
+  private emailService: EmailService;
 
-  constructor(userService: UserService, otpService: OTPService) {
+  constructor(
+    userService: UserService,
+    otpService: OTPService,
+    emailService: EmailService
+  ) {
     super();
     this.userService = userService;
     this.otpService = otpService;
+    this.emailService = emailService;
 
     // bind all methods
     this.login = this.login.bind(this);
@@ -55,18 +63,22 @@ export class AuthController extends BaseController {
         return this.sendBadRequestResponse(res, "Email already exists");
       }
 
+      const user =
+        existingUser ||
+        (await this.userService.create({ username, email, password }));
       const otp = await this.otpService.generateAndSaveOTP(email);
-      if (existingUser && !existingUser.isVerified) {
-        return this.sendSuccessResponse(
-          res,
-          existingUser,
-          EXISTING_SIGNUP(email)
-        );
-      }
 
-      const user = await this.userService.create({ username, email, password });
-      // TODO:Send this OTP on email with proper email text of new account
-      return this.sendSuccessResponse<IUser>(res, user, NEW_SIGNUP(email));
+      this.emailService.sendMail(
+        user.email,
+        SIGNUP_EMAIL.SUBJECT,
+        SIGNUP_EMAIL.BODY(otp, user.username)
+      );
+
+      return this.sendSuccessResponse<IUser>(
+        res,
+        user,
+        existingUser ? EXISTING_SIGNUP(email) : NEW_SIGNUP(email)
+      );
     } catch (e) {
       return this.handleError(res, e, "signup", "AuthController");
     }
