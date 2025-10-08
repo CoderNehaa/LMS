@@ -8,10 +8,11 @@ export class OTPService extends BaseService<IOtp> {
   }
 
   async generateAndSaveOTP(email: string) {
-    const otp = Math.floor(100000 + Math.random() * 900000);
-    await OTPModel.findOneAndUpdate(
+    const otpNum = Math.floor(100000 + Math.random() * 900000);
+    const otp = otpNum.toString();
+    await this.model.findOneAndUpdate(
       { email },
-      { otp: otp.toString() },
+      { otp },
       { new: true, upsert: true }
     );
     return otp;
