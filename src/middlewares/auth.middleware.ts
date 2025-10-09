@@ -2,14 +2,15 @@ import { NextFunction, Request, Response } from "express";
 import { ACCESS_TOKEN_NAME, REFRESH_TOKEN_NAME } from "../constants/auth";
 import { UserService } from "../modules/user/user.service";
 import { EUserRoles } from "../modules/user/user.type";
-import { clearCookies, validateToken } from "../utils/helper";
+import { TokenService } from "../clients/token.service";
 
 export class AuthMiddleware {
   private userService: UserService;
+  private tokenService: TokenService;
 
-  constructor(service: UserService) {
+  constructor(service: UserService, tokenService: TokenService) {
     this.userService = service;
-
+    this.tokenService = tokenService;
     // bind methods
     this.authentic = this.authentic.bind(this);
     this.isAdmin = this.isAdmin.bind(this);
@@ -20,7 +21,7 @@ export class AuthMiddleware {
     res: Response,
     message: string = "Unauthorized"
   ) {
-    clearCookies(res);
+    this.tokenService.clearCookies(res);
     return res.status(401).json({ message });
   }
 
@@ -32,7 +33,11 @@ export class AuthMiddleware {
     }
 
     // Validate tokens
-    const decoded = validateToken(accessToken, refreshToken, res);
+    const decoded = await this.tokenService.validateToken(
+      accessToken,
+      refreshToken,
+      res
+    );
     if (!decoded || !decoded.id) {
       return this.sendUnauthorized(res);
     }
