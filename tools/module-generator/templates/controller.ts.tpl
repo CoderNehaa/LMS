@@ -37,6 +37,12 @@ export class {{Module}}Controller extends BaseController {
     try {
       const { id } = req.params;
       const data = await this.{{module}}Service.updateById(String(id), req.body);
+      if (!data) {
+        return this.sendNotFoundResponse(
+          res,
+          "{{module}} not found or failed to update!"
+        );
+      }
       return this.sendSuccessResponse(res, data, "Update operation completed successfully!");
     } catch (e) {
       return this.handleError(res, e, "updateById", "{{Module}}Controller");

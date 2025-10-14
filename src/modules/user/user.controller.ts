@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { BaseController } from "../base/base.controller";
 import { UserService } from "./user.service";
+import { IUser } from "./user.type";
 
 export class UserController extends BaseController {
   private userService: UserService;
@@ -45,7 +46,10 @@ export class UserController extends BaseController {
     }
   };
 
-  deleteUser = async (req: Request, res: Response) => {
+  deleteUser = async (
+    req: Request,
+    res: Response
+  ): Promise<Response<IResponse<IUser>>> => {
     try {
       const userId = req.user._id;
       const deletedUser = await this.userService.softDeleteById(String(userId));
